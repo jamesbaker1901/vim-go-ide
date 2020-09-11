@@ -1,10 +1,41 @@
 # Vim as a Go IDE
 This repo serves as a guide on how to set up and use [Neovim](https://neovim.io/) as a golang IDE on OSX (10.15.6), though most of this will also apply to Linux. Included are copies of my personal dotfiles and settings for neovim, coc, etc. that make Go development in vim a joy.
 
+* [Why Vim?](#Why Vim?)
+* [Prereqs](#Prereqs)
+	* [xcode & brew](#xcode & brew)
+	* [neovim python3 yarn](#neovim python3 yarn)
+	* [install nodejs](#install nodejs)
+	* [alias nvim to vim](#Optionally Alias nvim to vim)
+	* [python nvim packages](#python nvim packages)
+	* [golang](#golang)
+* [Neovim & Vim-Plug](#Neovim & Vim-Plug)
+	* [Install Vim-Plug](#Install Vim-Plug)
+	* [Install fzf & ripgrep](#Optionally install fzf & ripgrep)
+* [Vim-Go & CoC](#Vim-Go and CoC)
+	* [Installing Vim-Go & CoC](#Installing Vim-Go and CoC)
+	* [Configuring Vim-Go & CoC](#Configuring vim-Go and CoC)
+	* [Additional Plugins](#Installing Additional Plugins)
+* [Vim-Go & CoC Usage](#Vim-Go and CoC Usage)
+	* [Completion](#Completion)
+	* [Goto's and Shortcuts](#Goto's and Shortcuts)
+* [File Navigation with NERDTree](#File Navigation with NERDTree) 
+* [fzf & ripgrep](#fzf and ripgrep)
+* [Debugging](#Debugging)
+* [Snippets](#Snippets)
+* [Commenting](#Commenting)
+* [git](#git)
+* [vim-colors](#vim-colors)
+* [General Vim Tricks](#General Vim Tricks)
+	* [Remap Leader](#Remap Leader)
+	* [Time Saving Remaps](#Time Saving Remaps)
+	* [Navigating Buffers Remaps](#Navigating Buffers Remaps)
+
+
 ## Why Vim?
 Vim is more than simply a text editor, it's a [language](https://www.youtube.com/watch?v=wlR5gYd6um0) unto itself in a sense. As a developer, or in my case Site Reliability Engineer, the vast majority of our work consists of editing text files. Often that means writing code in our language of choice, but it also includes editing countless yaml and json files, composing emails, editing various configuration files, etc. The classic vim keybindings, modes, and concepts provide a common framework for editing _any_ text extremely quickly and easily. Using the timesaving vim keybindings makes even more sense when we consider that developers and SREs are editing _existing_ files the majority of time, i.e., we're not writing code from scratch, we're simply making changes or additions to existing code bases. Vim's ability to quickly move around a project or file, replace and duplicate text, etc. makes it even more powerful here ... and with the addition of some useful plugins and config changes, we can take that speed to a whole new level.
 
-IDEs are custom built to be extremely useful for a particular language: code completion, syntax checking, built in debugging, git support, integration with Docker and other fancy bells and whistles make using an IDE very attractive. All of that comes with a price though: performance. IDEs tend to be rather resource hungry. Throw in Chrome's constant hunger for ram, the recent proliferation Electron desktop apps, and the many stackoverflow tabs kept open to effectively write code and a lesser system can slow to a crawl while compiling or running demanding code. And while most IDEs support a "vim mode," I've personally never found these settings and plugins as effective as the real thing.
+IDEs are custom built to be extremely useful for a particular language: code completion, syntax checking, built in debugging, git support, integration with Docker and other fancy bells and whistles make using an IDE very attractive. All of that comes with a price though: performance. IDEs tend to be rather resource hungry. Throw in Chrome's constant hunger for ram, the recent proliferation of Electron desktop apps, and the many stackoverflow tabs kept open to effectively write code and a lesser system can slow to a crawl while compiling or running demanding code. And while most IDEs support a "vim mode," I've personally never found these settings and plugins as effective as the real thing.
 
 So devs were left with the choice of a minimal dev experience in Vim (excellent text editing ability, and performant application) and the warm, but heavy embrace of an IDE (amazing features but at a price). But with the recent advent of mature [language servers](https://langserver.org/) and plugins to support them, with a bit of work those of us who love Vim and the terminal life no longer need to sacrifice the features that an IDE brings to the table.
 
@@ -29,7 +60,7 @@ nodejs is required by coc.
 curl -sL install-node.now.sh/lts | bash
 ```
 
-#### Optionally alias nvim to vim
+#### Optionally Alias nvim to vim
 The rest of this guide assumes you've alias'd `nvim` to `vim` in your `~/.zshrc` or `~/.bashrc`. The NeoVim binary is called `nvim` and if you wish to use it as a complete replacement for vim as I do, you'll need to set up this alias or remember to call `nvim` whenever this guide specifices `vim`.
 ```
 # add this line to your shell's rc file
@@ -37,7 +68,7 @@ alias vim='/usr/local/bin/nvim'
 ```
 
 #### python nvim packages
-We'll need these for additional coc plugins later. If you use [pyenv](https://github.com/pyenv/pyenv) or something similar then you may not want to use the system python for this. I personally don't write much python code (and when I do, I used a container to avoid path and env issues) so I went this route. In any case, neovim and coc need to be able to find a python executable that can import pynvim.
+We'll need these for additional coc plugins later. If you use [pyenv](https://github.com/pyenv/pyenv) or something similar then you may not want to use the system python for this. I personally don't write much python code (and when I do, I use a container to avoid path and env issues) so I went this route. In any case, neovim and coc need to be able to find a python executable that can import pynvim.
 ```
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python2 get-pip.py
@@ -76,10 +107,10 @@ These tools will make using vim as an IDE _even better_, but they aren't specifi
 brew install fzf ripgrep
 ```
 
-## vim-go and coc
+## Vim-Go and CoC
 For years, Go support in vim was handled mostly by the amazing [vim-go](https://github.com/fatih/vim-go) project. We'll still install and use some of its features here, but many of its functions will now be supplanted by the amazing [Conquer of Completion](https://github.com/neoclide/coc.nvim) aka coc. These two plugins will provide the bulk of the IDE features we're used to in other editors.
 
-#### Installing vim-go and coc
+#### Installing Vim-Go and CoC
 Add these two lines to your `~/.config/nvim/init.vim` file after the call `plug#begin('~/.vim/plugged')` line.
 ```
 call plug#begin('~/.vim/plugged')
@@ -96,7 +127,7 @@ Once those additional dependencies are finished installing, We have a few more s
 
 They'll give you the context and configuration to get going with vim-go and coc, without all of the extra steps of this guide, if you already have your own plugins and shortcuts or simply don't want such things.
 
-#### Configuring vim-go and coc
+#### Configuring Vim-Go and CoC
 These settings are pretty basic for vim-go, add them to your `~/.config/nvim/init.vim`:
 ```
 " vim-go stuff
@@ -214,7 +245,7 @@ mkdir -p ~/.config/nvim
 cp init.vim ~/.config/nvim/
 ```
 
-#### Installing additional Plugins
+#### Installing Additional Plugins
 Let's install some *more* helpful plugins :) Our goal is to make vim into a super charged Go IDE. The core functionality required is handled by vim-go and coc, but we want more than just completion. Add these plugins to your `~/.config/nvim/init.vim` and install them with `:PlugInstall`.
 
 ```
@@ -228,9 +259,9 @@ Plug 'junegunn/fzf.vim' 		      " fuzzy finder
 Plug 'jeffkreeftmeijer/vim-numbertoggle'      " toggles relative or static line nums
 Plug 'Xuyuanp/nerdtree-git-plugin' 	      " NERDTree git status
 ```
-If you find that one or more of these plugins isn't for you, you can easily remove them by just deleting or commenting out the line in you `init.vim`, reloading vim, and then doing `:PlugClean`. `vim-plug` will remove the plugin locally.
+If you find that one or more of these plugins isn't for you, you can easily remove them by just deleting or commenting out the line in your `init.vim`, reloading vim, and then doing `:PlugClean`. `vim-plug` will remove the plugin locally.
 
-## CoC and Vim-Go Use
+## Vim-Go amd CoC Usasge
 ### Completion
 With coc and vim-go installed and configured, code completion should be working out of the box. Open up a go project and try it!
 
@@ -252,12 +283,12 @@ These are all entered in normal mode, by placing the cursor over the object you 
 | `U` | *Show GoDoc* `U` (`<shift>+u`) will display the GoDoc for a selected function in a pop up window. |
 | `,rn` | *Rename* `,rv` (`<leader>rn`) will rename the selected variable/func/etc. and all referenced instances of it. |
 
-## File/Project Navigation with NERDTree
+## File Navigation with NERDTree
 The excellent [NERDTree](https://github.com/preservim/nerdtree) plugin gives us a nice little file browser in a right aligned window by pressing `<ctrl>+n`
 
 _insert fancy gif here!_
 
-We can get move back to the main editing window without closing NERDTree with the shortcut `<ctrl>+ww`, otherwise, `<ctrl>+n` will close the NERDTree window and return focus to our previous editing window.
+We can move back to the main editing window without closing NERDTree with the shortcut `<ctrl>+ww`, otherwise, `<ctrl>+n` will close the NERDTree window and return focus to our previous editing window.
 
 If you enjoy having the NERDTree file browser displayed automatically when starting vim, add the following to your `init.vim`: 
 ```
@@ -266,8 +297,8 @@ autocmd vimenter * NERDTree
 
 Because we also installed the [nerdtree-git-plugin](https://github.com/Xuyuanp/nerdtree-git-plugin) we'll have git status displayed in the NERDTree menu when we're in a git project.
 
-#### fzf and ripgrep
-[fzf]https://github.com/junegunn/fzf and it's correspoding vim plugin [fzf.vim](https://github.com/junegunn/fzf.vim) with its [ripgrep](https://github.com/BurntSushi/ripgrep) integration _really_ make vim extremely powerful. I've included the most useful fzf.vim commands, but there are more documented on the project's github. 
+## fzf and ripgrep
+[fzf](https://github.com/junegunn/fzf) and it's correspoding vim plugin [fzf.vim](https://github.com/junegunn/fzf.vim) with its [ripgrep](https://github.com/BurntSushi/ripgrep) integration _really_ make vim extremely powerful. I've included the most useful fzf.vim commands, but there are more documented on the project's github. 
 
 Commands
 --------
@@ -290,9 +321,9 @@ Commands
 | `:Commits`        | Git commits (requires [fugitive.vim][f])                                |
 | `:BCommits`       | Git commits for the current buffer                                      |
 
-In my view the most useful is the ripgrep integration: `:Rg [PATTERN]`, where `[PATTERN]` is a string on a line somewhere in a project's files. This will use ripgrep to quickly search your project (ignoring things in .gitignore) and pipe the results, any lines where your pattern matched, to fzf where you can now use fuzzy finding to quickly narrow the results to the exact line you need. Hit enter and be taken immediately to the line, in a new buffer if vim has to open a new file, or in an existing buffer if you already have that file open.
+In my view the most useful is the ripgrep integration: `:Rg [PATTERN]`, where `[PATTERN]` is a string on a line somewhere in a project's files. This will use ripgrep to quickly search your project (ignoring things in .gitignore) and pipe the results (any lines where your pattern matched) to fzf where you can now use fuzzy finding to quickly narrow the results to the exact line you need. Hit enter and be taken immediately to the line, in a new buffer if vim has to open a new file, or in an existing buffer if you already have that file open.
 
-`:Commits` can simplify orking on large git projects with many commits finding the right one. `:Colors` is quite useful as well for quickly changing between your many vim color schemes. Definitely dive in with fzf.vim (as well as its cli version) ... it's quite an amazing tool!
+`:Commits` can simplify working on large git projects with many commits finding the right one. `:Colors` is quite useful as well for quickly changing between your many vim color schemes. Definitely dive in with fzf.vim (as well as its cli version) ... it's quite an amazing tool!
 
 
 ## Debugging
@@ -320,7 +351,7 @@ https://vimcolors.com/
 ## General Vim Tricks
 These suggestions are not specific to writing go in vim, and are more personal preference than anything, but in my experience they are extremely useful.
 
-#### Remap leader
+#### Remap Leader
 By default the `<leader>` key in vim is `\`. Feel free to keep it, but comma `,` is far easier to reach and use. Since many subsequent shortcuts involve the `<leader>` key it makes sense to set it to something easily accessible. The timeout setting is optional, it simply gives you a bit more grace between pressing the leader key and whatever keys follow. It will definitely be helpful as you're learning new shortcuts.
 ```
 let mapleader = ","
